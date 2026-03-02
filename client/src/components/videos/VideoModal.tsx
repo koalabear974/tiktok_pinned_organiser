@@ -44,7 +44,7 @@ export default function VideoModal({ video: initialVideo, onClose }: VideoModalP
     };
   }, [handleEscape]);
 
-  const tiktokId = v.video_id || v.id;
+  const tiktokId = v.id;
   const location = [v.poi_name, v.poi_city].filter(Boolean).join(', ');
 
   return (
