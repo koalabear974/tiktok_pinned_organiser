@@ -148,3 +148,36 @@ export async function downloadThumbnailBatch(
     body: JSON.stringify({ videoIds }),
   });
 }
+
+// ---------- Backups ----------
+
+export interface Backup {
+  name: string;
+  size: number;
+  createdAt: string;
+}
+
+export async function fetchBackups(): Promise<Backup[]> {
+  const data = await request<{ backups: Backup[] }>('/api/backups');
+  return data.backups;
+}
+
+export async function createBackup(name: string): Promise<Backup> {
+  return request<Backup>('/api/backups', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function restoreBackup(name: string): Promise<{ success: boolean; restored: string }> {
+  return request('/api/backups/restore', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteBackup(name: string): Promise<void> {
+  return request<void>(`/api/backups/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+  });
+}
