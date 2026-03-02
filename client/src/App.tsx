@@ -139,11 +139,7 @@ function AppContent() {
 
         // Get thumbnail for the first dragged video
         const firstVideo = videos.find((v) => v.id === ids[0]);
-        setDragThumbnailUrl(
-          firstVideo?.thumbnail_path
-            ? `/api/thumbnails/${firstVideo.thumbnail_path}`
-            : null
-        );
+        setDragThumbnailUrl(firstVideo?.thumbnail_url || null);
       }
     },
     [videos]

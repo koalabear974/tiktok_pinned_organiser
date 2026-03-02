@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, FileJson, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, X, FileJson, CheckCircle, AlertCircle, Loader2, Image } from 'lucide-react';
 import { useImportFile } from '../../hooks/useImport';
+import { downloadThumbnailBatch } from '../../api/client';
 import type { ImportResult } from '../../types';
 
 interface ImportDialogProps {
@@ -13,11 +14,17 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
   const importFile = useImportFile();
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [thumbnailProgress, setThumbnailProgress] = useState<{
+    downloaded: number;
+    remaining: number;
+  } | null>(null);
+  const thumbnailAbortRef = useRef(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
       setResult(null);
+      setThumbnailProgress(null);
     }
   }, []);
 
@@ -27,19 +34,61 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
     multiple: false,
   });
 
-  const handleImport = () => {
+  const downloadThumbnails = async (itemList: any[]) => {
+    thumbnailAbortRef.current = false;
+    const videoIds = itemList.map((item: any) => item.id);
+    let totalDownloaded = 0;
+
+    // Process in batches of 10
+    for (let i = 0; i < videoIds.length; i += 10) {
+      if (thumbnailAbortRef.current) break;
+
+      const batch = videoIds.slice(i, i + 10);
+      try {
+        const result = await downloadThumbnailBatch(batch);
+        totalDownloaded += result.downloaded;
+        setThumbnailProgress({
+          downloaded: totalDownloaded,
+          remaining: result.remaining,
+        });
+
+        if (result.remaining === 0) break;
+      } catch (err) {
+        console.error('Thumbnail batch error:', err);
+      }
+    }
+  };
+
+  const handleImport = async () => {
     if (!file) return;
+
+    // Read the file to get item IDs for thumbnail downloading
+    let parsedData: any = null;
+    try {
+      const text = await file.text();
+      parsedData = JSON.parse(text);
+    } catch {
+      // Let the import mutation handle the error
+    }
+
     importFile.mutate(file, {
       onSuccess: (data) => {
         setResult(data);
         setFile(null);
+
+        // Start progressive thumbnail download
+        if (parsedData?.itemList && data.imported > 0) {
+          downloadThumbnails(parsedData.itemList);
+        }
       },
     });
   };
 
   const handleClose = () => {
+    thumbnailAbortRef.current = true;
     setFile(null);
     setResult(null);
+    setThumbnailProgress(null);
     importFile.reset();
     onClose();
   };
@@ -162,6 +211,27 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
                   <p className="text-xs text-gray-500">Errors</p>
                 </div>
               </div>
+
+              {/* Thumbnail download progress */}
+              {thumbnailProgress && thumbnailProgress.remaining > 0 && (
+                <div className="flex items-center gap-2.5 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Image size={16} className="text-blue-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-blue-700">
+                      Downloading thumbnails... {thumbnailProgress.downloaded} done, {thumbnailProgress.remaining} remaining
+                    </p>
+                  </div>
+                  <Loader2 size={14} className="animate-spin text-blue-500" />
+                </div>
+              )}
+              {thumbnailProgress && thumbnailProgress.remaining === 0 && (
+                <div className="flex items-center gap-2.5 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <CheckCircle size={16} className="text-blue-500 flex-shrink-0" />
+                  <p className="text-xs text-blue-700">
+                    All {thumbnailProgress.downloaded} thumbnails downloaded
+                  </p>
+                </div>
+              )}
 
               {result.errors.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">

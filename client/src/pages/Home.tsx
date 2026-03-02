@@ -124,9 +124,7 @@ export default function Home() {
         setDragVideoIds(data.videoIds);
         setIsDragActive(true);
         const firstVideo = videos.find((v) => v.id === data.videoIds[0]);
-        setDragThumbnailUrl(
-          firstVideo?.thumbnail_path ? `/api/thumbnails/${firstVideo.thumbnail_path}` : null
-        );
+        setDragThumbnailUrl(firstVideo?.thumbnail_url || null);
       }
     },
     [videos]

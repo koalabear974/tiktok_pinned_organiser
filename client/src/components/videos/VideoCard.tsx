@@ -11,9 +11,7 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ video, onClick, selected, selectionMode, onSelect }: VideoCardProps) {
-  const thumbnailUrl = video.thumbnail_path
-    ? `/api/thumbnails/${video.thumbnail_path}`
-    : null;
+  const thumbnailUrl = video.thumbnail_url || null;
 
   const handleClick = (e: React.MouseEvent) => {
     if (selectionMode || e.shiftKey || e.metaKey || e.ctrlKey) {

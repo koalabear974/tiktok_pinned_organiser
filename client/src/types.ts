@@ -8,7 +8,7 @@ export interface Video {
   height: number;
   ratio: string;
   format: string;
-  is_image_post: number;
+  is_image_post: boolean;
   image_count: number;
   category_type: number | null;
   author_id: string;
@@ -19,7 +19,7 @@ export interface Video {
   music_title: string | null;
   music_author: string | null;
   music_duration: number;
-  music_is_original: number;
+  music_is_original: boolean;
   play_count: number;
   digg_count: number;
   comment_count: number;
@@ -30,9 +30,9 @@ export interface Video {
   poi_address: string | null;
   poi_city: string | null;
   poi_category: string | null;
-  thumbnail_path: string | null;
-  thumbnail_cached_at: number | null;
-  imported_at: number;
+  thumbnail_url: string | null;
+  thumbnail_cached_at: string | null;
+  imported_at: string;
   text_language: string | null;
   raw_json: string;
   save_order: number;

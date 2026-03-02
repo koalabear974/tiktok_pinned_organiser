@@ -120,23 +120,31 @@ export async function deleteCategory(id: number): Promise<void> {
 // ---------- Import ----------
 
 export async function importFile(file: File): Promise<ImportResult> {
-  const formData = new FormData();
-  formData.append('file', file);
+  const text = await file.text();
+  const data = JSON.parse(text);
 
-  const res = await fetch('/api/import', {
+  // Pass the full parsed JSON (which includes itemList, cursor, total, hasMore)
+  return request<ImportResult>('/api/import', {
     method: 'POST',
-    body: formData,
+    body: JSON.stringify({
+      ...data,
+      filename: file.name,
+    }),
   });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(body.error || res.statusText, res.status);
-  }
-
-  return res.json();
 }
 
 export async function fetchImports(): Promise<unknown[]> {
   const data = await request<{ imports: unknown[] }>('/api/imports');
   return data.imports;
+}
+
+// ---------- Thumbnails ----------
+
+export async function downloadThumbnailBatch(
+  videoIds: string[]
+): Promise<{ downloaded: number; failed: number; remaining: number }> {
+  return request('/api/thumbnails/download-batch', {
+    method: 'POST',
+    body: JSON.stringify({ videoIds }),
+  });
 }
