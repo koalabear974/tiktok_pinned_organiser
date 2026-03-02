@@ -8,7 +8,9 @@
     "dev": "vercel dev",
     "build": "cd client && npm run build",
     "test": "npm run test -w client",
-    "test:e2e": "npx playwright test"
+    "test:e2e": "npx playwright test",
+    "scrape": "npx tsx scraper/scrape.ts",
+    "scrape:no-import": "npx tsx scraper/scrape.ts --no-import"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",

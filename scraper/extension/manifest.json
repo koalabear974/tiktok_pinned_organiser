@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TikTok Favorites Scraper",
+  "version": "1.0",
+  "description": "Captures TikTok favorites API responses for local import",
+  "permissions": [],
+  "host_permissions": [
+    "https://www.tiktok.com/*",
+    "http://127.0.0.1:3456/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.tiktok.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["https://www.tiktok.com/*"]
+    }
+  ]
+}

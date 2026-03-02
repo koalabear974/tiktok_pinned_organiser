@@ -143,6 +143,9 @@ data/db.sqlite
 data/db.sqlite-shm
 data/db.sqlite-wal
 data/thumbnails/
+data/session/
+data/scrapes/
+data/backups/
 test-results/
 .DS_Store
 .idea/
